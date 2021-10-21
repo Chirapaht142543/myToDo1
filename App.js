@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, StatusBar, FlatList } from "react-native";
 import styled from "styled-components";
 import AddInput from "./components/AddInput";
@@ -10,13 +10,42 @@ import firestore from '@react-native-firebase/firestore';
 export default function App() {
   const [data, setData] = useState([]);
 
+  //โชว์ข้อมูลหน้าแอพ
+  useEffect(() => {
+    const showtask = firestore()
+      .collection('mytask')
+      .onSnapshot(querySnapshot => {
+        const data = querySnapshot.docs.map(documentSnapshot => {
+          return {
+            _id: documentSnapshot.id,
+            value: '',
+            date: '',
+            ...documentSnapshot.data()
+          };
+        });
+        setData(data);
+
+      });
+    return () => showtask();
+  }, []
+  );
+
   const submitHandler = (value, date) => {
+    const timetodo = date.getDate() + "-" + parseInt(date.getMonth() + 1) + "-" + parseInt(date.getFullYear() + 543);
+
+    firestore()
+      .collection('mytask')
+      .add({
+        value: value,
+        date: timetodo,
+        key: Math.random().toString()
+      });
     setData((prevTodo) => {
-      const realdate = date.getDate() + "-"+ parseInt(date.getMonth()+1) +"-"+parseInt(date.getFullYear()+543);
+
       return [
         {
           value: value,
-          date: realdate,
+          date: timetodo,
           key: Math.random().toString(),
         },
         ...prevTodo,
@@ -24,10 +53,11 @@ export default function App() {
     });
   };
 
+  //ลบ
   const deleteItem = (key) => {
-    setData((prevTodo) => {
-      return prevTodo.filter((todo) => todo.key != key);
-    });
+    firestore()
+      .collection('mytask')
+      .doc(key).delete()
   };
 
   const searchItem = (keyword) => {

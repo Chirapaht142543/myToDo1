@@ -13,7 +13,7 @@ export default function TodoList({ item, deleteItem }) {
         {
           text: "ใช่",
           onPress: () => {
-            deleteItem(item.key);
+            deleteItem(item._id); 
           },
         },
         {
